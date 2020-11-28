@@ -10,7 +10,9 @@
         <script type="text/javascript" src="jscript/suncalc.js"></script>
 		<link rel="icon" href="favicon.ico" type="image/x-icon">
         <script>
-            var TodayDate, YesterdayDate, TommorowDate;
+            const TEMP_NONVALID = -100.0;
+			const HUM_NONVALID = 0.0;
+			var TodayDate, YesterdayDate, TommorowDate;
 			var hours, minutes, seconds;
 			var astroTimes, astroTimesT1;
 			
@@ -28,10 +30,10 @@
                     document.getElementById('BMT').innerHTML	= getData.BMT.toFixed(1);        
                     document.getElementById('BMH').innerHTML	= getData.BMH.toFixed(1);        
                     document.getElementById('Temp').innerHTML	= getData.Temp.toFixed(1);        
-                    document.getElementById('Hum').innerHTML	= getData.Hum.toFixed(1);        
+                    document.getElementById('Hum').innerHTML	= getHumBackup(getData).toFixed(1);        
                     document.getElementById('Temp2').innerHTML	= getData.Temp2.toFixed(1);        
                     document.getElementById('Hum2').innerHTML	= getData.Hum2.toFixed(1);        
-                    document.getElementById('OW1').innerHTML	= getData.OW1.toFixed(1);        
+                    document.getElementById('OW1').innerHTML	= getTempBackup(getData).toFixed(1);        
                     document.getElementById('OBJ').innerHTML	= getData.OBJ.toFixed(1);
                     document.getElementById('AMB').innerHTML	= getData.AMB.toFixed(1);        
                     document.getElementById('BHV').innerHTML	= getData.BHV.toFixed(1);        
@@ -39,7 +41,7 @@
                     document.getElementById('VER').innerHTML	= getData.Ver;
                     document.getElementById('VED').innerHTML	= getData.VDate;
 					DisplayCurrentTime();
-					DisplayCloudIDX((getData.OW1 - getData.OBJ));
+					DisplayCloudIDX((getTempBackup(getData) - getData.OBJ));
 					DisplayRainSensor(getData.Rain);
 					DisplayNormalizedPress(getData.BMP, getData.OW1, 165);
                 };      
@@ -135,6 +137,73 @@
                 xhr.send();
             }			
 			
+			function getTempBackup(getData)
+			{
+				
+				var ret_val = TEMP_NONVALID;
+				var tooltop_val = "";
+				var textcolor = "#000";
+				if (getData.OW1 > TEMP_NONVALID) {
+					ret_val = getData.OW1;
+					tooltop_val = "ds18b20";
+				} else if (getData.Temp > TEMP_NONVALID) {
+					ret_val =  getData.Temp
+					tooltop_val = "DHT22";
+					textcolor = "#9e9e9e";
+				} else if (getData.Temp2 > TEMP_NONVALID) {
+					ret_val =  getData.Temp2
+					tooltop_val = "DHT22_2";
+					textcolor = "#9e9e9e";
+				} else if (getData.BMT > TEMP_NONVALID) {
+					ret_val =  getData.BMT
+					tooltop_val = "BME280";
+					textcolor = "#9e9e9e";
+				} else {
+					ret_val = TEMP_NONVALID;
+					textcolor = "#9e9e9e";
+				}
+
+				tooltop_val = "Current temperature measured by " +  tooltop_val + " sensor";
+
+				el = document.getElementById('temp_tooltip');
+				el.setAttribute('data-tooltip', tooltop_val);
+				el.style.color = textcolor;
+
+				return ret_val;
+			}
+
+			function getHumBackup(getData)
+			{
+				
+				var ret_val = HUM_NONVALID;
+				var tooltop_val = "";
+				var textcolor = "#000";
+				if (getData.Hum > HUM_NONVALID) {
+					ret_val = getData.Hum;
+					tooltop_val = "DHT22";
+				} else if (getData.Hum2 > HUM_NONVALID) {
+					ret_val =  getData.Hum2
+					tooltop_val = "DHT22_2";
+					textcolor = "#9e9e9e";
+				} else if (getData.BMH > HUM_NONVALID) {
+					ret_val =  getData.BMH
+					tooltop_val = "BME280";
+					textcolor = "#9e9e9e";
+				} else {
+					ret_val = HUM_NONVALID;
+					textcolor = "#9e9e9e";
+				}
+
+
+				tooltop_val = "Current humidity measured by " +  tooltop_val + " sensor";
+
+				el = document.getElementById('hum_tooltip');
+				el.setAttribute('data-tooltip', tooltop_val);
+				el.style.color = textcolor;
+
+				return ret_val;
+			}
+
 			
             function AstroData() {
 				astroTimes = SunCalc.getTimes(TodayDate, 43.93, 39.93);
@@ -286,7 +355,7 @@
                     <div class="boxes-align">
                       <div class="small-box">
                         <h2>Temperature</h2>
-						<span class="tooltip2" data-tooltip="Current temperature measured by ds18b20 sensor">
+						<span id="temp_tooltip" class="tooltip2" data-tooltip="Current temperature measured by ds18b20 sensor">
                         <i class="wi wi-thermometer wi-4x">&nbsp;</i><i class="wi wi-4x" id="OW1"><span class="wi wi-na normal-color"></span></i><i class="wi wi-celsius wi-2x">&nbsp;</i>
 						</span>
                         <p><span id="Temp">100</span><i class="wi wi-celsius">&nbsp;</i>by DHT22 | <span id="BMT">100</span><i class="wi wi-celsius">&nbsp;</i>by BME280 | <span id="Temp2">100</span><i class="wi wi-celsius">&nbsp;</i>by DHT_2</p>
@@ -305,7 +374,7 @@
                     <div class="boxes-align">
                       <div class="small-box">
                         <h2>Humidity</h2>
-						<span class="tooltip2" data-tooltip="Current humidity measured by DHT22 sensor">
+						<span id="hum_tooltip" class="tooltip2" data-tooltip="Current humidity measured by DHT22 sensor">
 						<i class="wi wi-humidity wi-4x">&nbsp;</i><i class="wi wi-4x" id="Hum"></i><i class="wi wi-2x">&nbsp;%</i>
 						</span>
                         <p><span id="BMH">0</span><i class="wi">%&nbsp;</i>by BME280 | <span id="Hum2">0</span><i class="wi">%&nbsp;</i>by DHT22_2</p>
@@ -464,7 +533,7 @@
                     <div class="cms-boxes-items">
                         <div class="boxes-align">
                             <div class="header-box">
-                                <small>WEATHER STATION MkII<br>Firmware v<span id="VER">0.0</span> [<span id="VED">20200101</span>], HTML v2.8b [20201102].<bra>
+                                <small>WEATHER STATION MkII<br>Firmware v<span id="VER">0.0</span> [<span id="VED">20200101</span>], HTML v2.9 [20201128].<bra>
 								Runtime: <span id="RT">0</span></small></p>
                             </div>
                         </div>
