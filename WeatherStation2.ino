@@ -12,6 +12,9 @@
   - Deepsleep mode?
 
  Changes:
+   ver 2.6 2020/11/28 [455656/33040]
+                      - moved config to Configuration.h
+                      - narodmon data backup sending: temp/dht1/dht2/bme
    ver 2.5 2020/11/02 [455544/33040]
                       - additional DHT22 sensor
    ver 2.4с 2020/11/02 [454744/32904]
@@ -89,8 +92,8 @@
 */
 
 //Compile version
-#define VERSION "2.5"
-#define VERSION_DATE "20201102"
+#define VERSION "2.6"
+#define VERSION_DATE "20201128"
 
 #include <FS.h>          // this needs to be first, or it all crashes and burns...
 #include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
@@ -113,105 +116,15 @@
 
 #include <Ticker.h>//for LED status
 
-//#ifndef STASSID
-//#define STASSID "BATMAJ"
-//#define STAPSK  ""
-//#endif
-//const char* ssid = STASSID;
-//const char* password = STAPSK;
-const char* ssid = "WeatherStation";
-const char* host = "weather";
-#define OTA_PORT 18266
+#include "Configuration.h"
 
-struct ConfigStruct {
-  char POST_URL[101];
-  uint8_t OneWirePin;
-  uint8_t I2CSDAPin;
-  uint8_t I2CSCLPin;
-  uint8_t DHT22Pin;
-  uint8_t RainPin;
-};
-const char *configFilename = "/config.cfg";  
 ConfigStruct configData;                              // <- global configuration object
-
-#define WIFI_CONFIG_PORTAL_WAITTIME  30
-#define WIFI_CONFIG_PORTAL_WAITTIME_STARTUP  60
 
 ESP8266WebServer server(80);
 ESP8266HTTPUpdateServer httpUpdater;
 
-#define DEFAULT_POST_URL "http://192.168.0.199/weather/adddata.php"
-//char POST_URL[101] = "http://192.168.0.199/weather/adddata.php"; //Where to post data
 unsigned long _last_HTTP_SEND=0;
 
-
-/* for Wemos D1 R1
- *  
-#define PIN_WIRE_SDA (4)  D14   (by default, but I redefined, see below)
-#define PIN_WIRE_SCL (5)  D15   (by default, but I redefined, see below)
-
-//new ESP-12E GPIO2
-#define LED_BUILTIN 2       D9
-
-static const uint8_t D0   = 3;
-static const uint8_t D1   = 1;
-static const uint8_t D2   = 16;
-static const uint8_t D3   = 5;                --> SDA
-static const uint8_t D4   = 4;                --> SCL
-static const uint8_t D5   = 14;               --> DHT_2
-static const uint8_t D6   = 12;               --> OneWire bus
-static const uint8_t D7   = 13; /=D11             
-static const uint8_t D8   = 0;  /startup pin.  pulled up to Vcc. Don't use as intput. Special care as output
-static const uint8_t D9   = 2;  /startup pin. LED.  pulled up to Vcc. Don't use as intput. Special care as output         -->Used as LED
-static const uint8_t D10  = 15; /startup pin. pulled down to GND. Don't use as intput. Special care as output
-static const uint8_t D11  = 13; /=D7          --> DHT_1
-static const uint8_t D12  = 12; /=D6
-static const uint8_t D13  = 14; /=D5
-static const uint8_t D14  = 4;  /=D4
-static const uint8_t D15  = 5;  /=D3
-
-GPIO6-GPIO11 - flash pins
-
-*/
-
-/* NODEMCU
-#define PIN_WIRE_SDA (4)    D2
-#define PIN_WIRE_SCL (5)    D1
-
-#define LED_BUILTIN 2       D4
-#define LED_BUILTIN_AUX 16  D0
-
-static const uint8_t D0   = 16;
-static const uint8_t D1   = 5;
-static const uint8_t D2   = 4;
-static const uint8_t D3   = 0;
-static const uint8_t D4   = 2;
-static const uint8_t D5   = 14;
-static const uint8_t D6   = 12;
-static const uint8_t D7   = 13;
-static const uint8_t D8   = 15;
-static const uint8_t D9   = 3;
-static const uint8_t D10  = 1;
-*/
-
-/* Wemos D1 Mini
-#define PIN_WIRE_SDA (4)  D2
-#define PIN_WIRE_SCL (5)  D1
-
-#define LED_BUILTIN 2
-
-static const uint8_t D0   = 16;
-static const uint8_t D1   = 5;
-static const uint8_t D2   = 4;
-static const uint8_t D3   = 0;
-static const uint8_t D4   = 2;
-static const uint8_t D5   = 14;
-static const uint8_t D6   = 12;
-static const uint8_t D7   = 13;
-static const uint8_t D8   = 15;
-static const uint8_t RX   = 3;
-static const uint8_t TX   = 1;
- */
 #define NONVALID_TEMPERATURE -100
 #define NONVALID_PRESSURE 0
 #define NONVALID_HUMIDITY 0
@@ -220,7 +133,6 @@ static const uint8_t TX   = 1;
 Ticker ticker;
 const int STATUS_LED = LED_BUILTIN;
 
-#define DHT_PIN_DEFAULT D11
 
 enum {DHT22_SAMPLE, DHT_TEMPERATURE, DHT_HUMIDITY, DHT_DATAPTR};  // DHT functions enumerated
 enum {DHT_OK = 0, DHT_ERROR_TIMEOUT = -1, DHT_ERROR_CRC = -2, DHT_ERROR_UNKNOWN = -3};  // DHT error codes enumerated
@@ -228,32 +140,18 @@ float dhtTemp = NONVALID_TEMPERATURE;
 float dhtHum =0;
 unsigned long _lastReadTime_DHT=0;
 DHTesp dht;
-#define DHT_2_PIN_DEFAULT D5
 float dhtTemp2 = NONVALID_TEMPERATURE;
 float dhtHum2 =0;
 DHTesp dht2;
 
-//I2C wire
-#define SDA_PIN_DEFAULT D3
-#define SCL_PIN_DEFAULT D4
-
 // Create BME280 object
-#define MY_BME280_ADDRESS (0x76)
 BME280_I2C bme(MY_BME280_ADDRESS);
-#define SEALEVELPRESSURE_HPA (1013.25)
 float bmePres = NONVALID_PRESSURE;
 float bmeTemp = NONVALID_TEMPERATURE;
 float bmeHum  = NONVALID_HUMIDITY;
 unsigned long _lastReadTime_BME=0;
 
-
-#define ONE_WIRE_BUS_PIN_DEFAULT D6 // Data wire is plugged into this port 
-//uint8_t ONE_WIRE_BUS_PIN = ONE_WIRE_BUS_PIN_DEFAULT;
-//char ONE_WIRE_BUS_PIN_ST[4];
 OneWire  OneWireBus;  
-
-//ROM = 28 6D A3 68 4 0 0 F8
-uint8_t OW_Temp1Addr[8] = { 0x28, 0x6D, 0xA3, 0x68, 0x4, 0x0, 0x0, 0xF8 };
 float OW_Temp1=NONVALID_TEMPERATURE;
 unsigned long _lastReadTime_OW=0;
 
@@ -266,31 +164,18 @@ float mlxObj = NONVALID_TEMPERATURE;
 unsigned long _lastReadTime_MLX=0;
 
 //BH1750FVI light sensor part
-#define BH1750_ADDR 0x23        // if ADD pin to GROUND, 0x23; if to VCC - 0x5C
 BH1750 lightMeter (BH1750_ADDR);
 float bh1750Lux = NONVALID_LUX;
 unsigned long _lastReadTime_BH1750=0;
 
 //Rain sensor
-#define RAIN_PIN_DEFAULT A0 // Default pin for Resistance Rain Sensor. The only one for ESP8266 :)
 unsigned int rainSensor;
 
 //Send to NAROMDMON
-#define NARODMON_DATA_SENDING_DEFAULT true         // Default value for narodmon sending flag
-bool bNarodmon_Send_Data=true;
-#define NARODMON_SERVER_POST  "http://narodmon.ru/post"
-#define NARODMON_SERVER_GET   "http://narodmon.ru/get"
+bool bNarodmon_Send_Data=NARODMON_DATA_SENDING_DEFAULT;
 unsigned long _last_NARODMON_SEND;
 
 unsigned long currenttime;              // millis from script start 
-#define POST_DATA_INTERVAL    120000    // 120000 = 2 мин
-#define POST_NARODMONDATA_INTERVAL    320000  //320000 = 5.33 мин
-#define JS_UPDATEDATA_INTERVAL  10000
-#define OW_READ_INTERVAL      5555
-#define BH1750_READ_INTERVAL  6666
-#define MLX_READ_INTERVAL     7777
-#define BME_READ_INTERVAL     9999
-#define DHT_READ_INTERVAL     11111
 
 bool bOutput=false;
 

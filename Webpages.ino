@@ -295,14 +295,28 @@ String SensorsParamString(){
   String buf="ID=" + WiFi.macAddress()+ "&";
   buf.replace(":", ""); 
 
-  buf+= "TEMP1=" + String(OW_Temp1) + "&";
+  buf+= "TEMP1=";
+  if (OW_Temp1 > NONVALID_TEMPERATURE) 
+    buf+= String(OW_Temp1);
+  else if (dhtTemp > NONVALID_TEMPERATURE) 
+    buf+= String(dhtTemp);
+  else if (dhtTemp2 > NONVALID_TEMPERATURE) 
+    buf+= String(dhtTemp2);
+  else if (bmeTemp > NONVALID_TEMPERATURE) 
+    buf+= String(bmeTemp);
+  buf+= "&";
+
   buf+= "PRESS=" + String(bmePres) + "&";
+  
   buf+= "HUM=";
-  if ((dhtHum) > 0) 
+  if ((dhtHum) > NONVALID_HUMIDITY) 
     buf+= String(dhtHum);
+  else if ((dhtHum2) > NONVALID_HUMIDITY) 
+    buf+= String(dhtHum2);
   else 
     buf+= String(bmeHum);
   buf+= "&";
+  
   buf+= "LUX=" + String(bh1750Lux) + "&";
   buf+= "CIDX=" + String((OW_Temp1 - mlxObj));
 
