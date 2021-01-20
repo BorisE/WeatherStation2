@@ -12,6 +12,8 @@
   - Deepsleep mode?
 
  Changes:
+   ver 2.7 2021/01/20 [455644/33044]
+                      - checking validity before sending to NARODMON
    ver 2.6 2020/11/28 [455656/33040]
                       - moved config to Configuration.h
                       - narodmon data backup sending: temp/dht1/dht2/bme
@@ -92,8 +94,8 @@
 */
 
 //Compile version
-#define VERSION "2.6"
-#define VERSION_DATE "20201128"
+#define VERSION "2.7"
+#define VERSION_DATE "20210120"
 
 #include <FS.h>          // this needs to be first, or it all crashes and burns...
 #include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
