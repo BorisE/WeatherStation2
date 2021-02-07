@@ -318,7 +318,7 @@ String SensorsParamString(){
   else 
     buf+= String(bmeHum);
   
-  buf+= "%LUX=" + String(bh1750Lux);
+  buf+= "&LUX=" + String(bh1750Lux);
   
   if ( mlxObj > NONVALID_TEMPERATURE ) 
     buf+= "&CIDX=" + String((OW_Temp1 - mlxObj));

@@ -12,6 +12,8 @@
   - Deepsleep mode?
 
  Changes:
+   ver 2.7a 2021/02/07 [455644/33044]
+                      - bugfix
    ver 2.7 2021/01/20 [455644/33044]
                       - checking validity before sending to NARODMON
    ver 2.6 2020/11/28 [455656/33040]
@@ -94,8 +96,8 @@
 */
 
 //Compile version
-#define VERSION "2.7"
-#define VERSION_DATE "20210120"
+#define VERSION "2.7a"
+#define VERSION_DATE "20210207"
 
 #include <FS.h>          // this needs to be first, or it all crashes and burns...
 #include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
