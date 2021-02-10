@@ -295,17 +295,18 @@ String SensorsParamString(){
   String buf="ID=" + WiFi.macAddress()+ "&";
   buf.replace(":", ""); 
   
-  float temp;
+  float temp = NONVALID_TEMPERATURE_MIN;
 
-  if (OW_Temp1 > NONVALID_TEMPERATURE) 
+  if (OW_Temp1 > NONVALID_TEMPERATURE_MIN && OW_Temp1 < NONVALID_TEMPERATURE_MAX) 
     temp  = OW_Temp1;
-  else if (dhtTemp > NONVALID_TEMPERATURE) 
+  else if (dhtTemp > NONVALID_TEMPERATURE_MIN && dhtTemp < NONVALID_TEMPERATURE_MAX) 
     temp  = dhtTemp;
-  else if (dhtTemp2 > NONVALID_TEMPERATURE) 
+  else if (dhtTemp2 > NONVALID_TEMPERATURE_MIN && dhtTemp2 < NONVALID_TEMPERATURE_MAX) 
     temp  = dhtTemp2;
-  else if (bmeTemp > NONVALID_TEMPERATURE)
+  else if (bmeTemp > NONVALID_TEMPERATURE_MIN && bmeTemp < NONVALID_TEMPERATURE_MAX)
     temp  = bmeTemp;
-  if (temp > NONVALID_TEMPERATURE)
+    
+  if (temp > NONVALID_TEMPERATURE_MIN && temp < NONVALID_TEMPERATURE_MAX)
     buf+= "TEMP1=" + String(temp);
 
   buf+= "&PRESS=" + String(bmePres);
@@ -320,8 +321,8 @@ String SensorsParamString(){
   
   buf+= "&LUX=" + String(bh1750Lux);
   
-  if ( mlxObj > NONVALID_TEMPERATURE ) 
-    buf+= "&CIDX=" + String((OW_Temp1 - mlxObj));
+  if ( (mlxObj > NONVALID_TEMPERATURE_MIN && mlxObj < NONVALID_TEMPERATURE_MAX) && (temp > NONVALID_TEMPERATURE_MIN && temp < NONVALID_TEMPERATURE_MAX)) 
+    buf+= "&CIDX=" + String((temp - mlxObj));
 
   return buf;
 }

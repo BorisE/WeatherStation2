@@ -74,7 +74,7 @@ int dhtCall(byte function)
 
 void readDHTSensor(float &t, float &h)
 {
-  t = NONVALID_TEMPERATURE;
+  t = NONVALID_TEMPERATURE_MIN;
   h = NONVALID_HUMIDITY;
   switch ((dhtCall(DHT22_SAMPLE))) // always request a sample first
   {
@@ -112,9 +112,9 @@ void printDHT(float &t, float &h)
   t = dht.getTemperature();
 
   if ( isnan(h) ) h = NONVALID_HUMIDITY;
-  if ( isnan(t) ) t = NONVALID_TEMPERATURE;
+  if ( isnan(t) ) t = NONVALID_TEMPERATURE_MIN;
 
-  if (h == NONVALID_HUMIDITY || t == NONVALID_TEMPERATURE) {
+  if (h == NONVALID_HUMIDITY || t == NONVALID_TEMPERATURE_MIN) {
     Serial.print("[DHT] ");
     Serial.println(dht.getStatusString());
   }else{
@@ -132,9 +132,9 @@ void printDHT_2(float &t, float &h)
   t = dht2.getTemperature();
 
   if ( isnan(h) ) h = NONVALID_HUMIDITY;
-  if ( isnan(t) ) t = NONVALID_TEMPERATURE;
+  if ( isnan(t) ) t = NONVALID_TEMPERATURE_MIN;
 
-  if (h == NONVALID_HUMIDITY || t == NONVALID_TEMPERATURE) {
+  if (h == NONVALID_HUMIDITY || t == NONVALID_TEMPERATURE_MIN) {
     Serial.print("[DHT2] ");
     Serial.println(dht2.getStatusString());
   }else{

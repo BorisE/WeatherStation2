@@ -12,6 +12,8 @@
   - Deepsleep mode?
 
  Changes:
+   ver 2.7b 2021/02/10 [455756/33044]
+                      - more solid data checking before sending to NARODMON
    ver 2.7a 2021/02/07 [455644/33044]
                       - bugfix
    ver 2.7 2021/01/20 [455644/33044]
@@ -96,7 +98,7 @@
 */
 
 //Compile version
-#define VERSION "2.7a"
+#define VERSION "2.7b"
 #define VERSION_DATE "20210207"
 
 #include <FS.h>          // this needs to be first, or it all crashes and burns...
@@ -129,7 +131,8 @@ ESP8266HTTPUpdateServer httpUpdater;
 
 unsigned long _last_HTTP_SEND=0;
 
-#define NONVALID_TEMPERATURE -100
+#define NONVALID_TEMPERATURE_MIN -55
+#define NONVALID_TEMPERATURE_MAX 100
 #define NONVALID_PRESSURE 0
 #define NONVALID_HUMIDITY 0
 #define NONVALID_LUX -100
@@ -140,31 +143,31 @@ const int STATUS_LED = LED_BUILTIN;
 
 enum {DHT22_SAMPLE, DHT_TEMPERATURE, DHT_HUMIDITY, DHT_DATAPTR};  // DHT functions enumerated
 enum {DHT_OK = 0, DHT_ERROR_TIMEOUT = -1, DHT_ERROR_CRC = -2, DHT_ERROR_UNKNOWN = -3};  // DHT error codes enumerated
-float dhtTemp = NONVALID_TEMPERATURE;
+float dhtTemp = NONVALID_TEMPERATURE_MIN;
 float dhtHum =0;
 unsigned long _lastReadTime_DHT=0;
 DHTesp dht;
-float dhtTemp2 = NONVALID_TEMPERATURE;
+float dhtTemp2 = NONVALID_TEMPERATURE_MIN;
 float dhtHum2 =0;
 DHTesp dht2;
 
 // Create BME280 object
 BME280_I2C bme(MY_BME280_ADDRESS);
 float bmePres = NONVALID_PRESSURE;
-float bmeTemp = NONVALID_TEMPERATURE;
+float bmeTemp = NONVALID_TEMPERATURE_MIN;
 float bmeHum  = NONVALID_HUMIDITY;
 unsigned long _lastReadTime_BME=0;
 
 OneWire  OneWireBus;  
-float OW_Temp1=NONVALID_TEMPERATURE;
+float OW_Temp1=NONVALID_TEMPERATURE_MIN;
 unsigned long _lastReadTime_OW=0;
 
 DallasTemperature ds18b20(&OneWireBus);
 
 // MLX90614 part
 MLX90614 mlx = MLX90614();
-float mlxAmb = NONVALID_TEMPERATURE;
-float mlxObj = NONVALID_TEMPERATURE;
+float mlxAmb = NONVALID_TEMPERATURE_MIN;
+float mlxObj = NONVALID_TEMPERATURE_MIN;
 unsigned long _lastReadTime_MLX=0;
 
 //BH1750FVI light sensor part
@@ -351,7 +354,7 @@ void loop(void) {
     {
       OW_Temp1 = ds18b20.getTempC(OW_Temp1Addr);
     }else{
-      OW_Temp1 = NONVALID_TEMPERATURE;
+      OW_Temp1 = NONVALID_TEMPERATURE_MIN;
     }
     
     Serial.print("[!OW1:");
