@@ -107,7 +107,9 @@ int NarodMon_sent_POST() {
   return ret;
 }
 
-
+/*
+ * Ререзрвный способ передачи данных на Narodmon (Базовый - POST) 
+ */
 int NarodMon_sent_GET() {
 // http://narodmon.ru/get?ID=MAC&mac1=value1&...&macN=valueN[&time=UnixTime][&name=название][&lat=широта][&lon=долгота][&alt=высота_над_морем]
   int ret=HTTP_SEND_RES_NOCONNECTION;

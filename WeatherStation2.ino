@@ -12,6 +12,11 @@
   - Deepsleep mode?
 
  Changes:
+   ver 2.8a 2021/03/14 [455860/33060]
+                      - sending rain sensor to Narodmon
+                      - additional checking for CIDX before sending to Narodmon
+   ver 2.8 2021/03/14 [455812/33060]
+                      - sending rain sensor to Narodmon
    ver 2.7b 2021/02/10 [455756/33044]
                       - more solid data checking before sending to NARODMON
    ver 2.7a 2021/02/07 [455644/33044]
@@ -98,8 +103,8 @@
 */
 
 //Compile version
-#define VERSION "2.7b"
-#define VERSION_DATE "20210207"
+#define VERSION "2.8a2"
+#define VERSION_DATE "20210314"
 
 #include <FS.h>          // this needs to be first, or it all crashes and burns...
 #include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
@@ -133,6 +138,8 @@ unsigned long _last_HTTP_SEND=0;
 
 #define NONVALID_TEMPERATURE_MIN -55
 #define NONVALID_TEMPERATURE_MAX 100
+#define NONVALID_CIDX_MIN -5
+#define NONVALID_CIDX_MAX 50
 #define NONVALID_PRESSURE 0
 #define NONVALID_HUMIDITY 0
 #define NONVALID_LUX -100

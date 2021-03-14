@@ -321,8 +321,12 @@ String SensorsParamString(){
   
   buf+= "&LUX=" + String(bh1750Lux);
   
-  if ( (mlxObj > NONVALID_TEMPERATURE_MIN && mlxObj < NONVALID_TEMPERATURE_MAX) && (temp > NONVALID_TEMPERATURE_MIN && temp < NONVALID_TEMPERATURE_MAX)) 
+  if ( (mlxObj > NONVALID_TEMPERATURE_MIN && mlxObj < NONVALID_TEMPERATURE_MAX) && (temp > NONVALID_TEMPERATURE_MIN && temp < NONVALID_TEMPERATURE_MAX)  && ((temp - mlxObj) > NONVALID_CIDX_MIN && (temp - mlxObj) < NONVALID_CIDX_MAX) ) 
     buf+= "&CIDX=" + String((temp - mlxObj));
+
+  //Добавим RainSensor
+  buf+= "&RAIN=";
+  buf+= String(rainSensor);
 
   return buf;
 }
