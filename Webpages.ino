@@ -292,11 +292,11 @@ String SensorsJSON()
  * Make param string for NarodMon
  */
 String SensorsParamString(){
-  String buf="ID=" + WiFi.macAddress()+ "&";
+  String buf="ID=" + WiFi.macAddress();
   buf.replace(":", ""); 
   
+  /* check temp */
   float temp = NONVALID_TEMPERATURE_MIN;
-
   if (OW_Temp1 > NONVALID_TEMPERATURE_MIN && OW_Temp1 < NONVALID_TEMPERATURE_MAX) 
     temp  = OW_Temp1;
   else if (dhtTemp > NONVALID_TEMPERATURE_MIN && dhtTemp < NONVALID_TEMPERATURE_MAX) 
@@ -305,28 +305,37 @@ String SensorsParamString(){
     temp  = dhtTemp2;
   else if (bmeTemp > NONVALID_TEMPERATURE_MIN && bmeTemp < NONVALID_TEMPERATURE_MAX)
     temp  = bmeTemp;
-    
+  else if (mlxAmb > NONVALID_TEMPERATURE_MIN && mlxAmb < NONVALID_TEMPERATURE_MAX)
+    temp  = mlxAmb;
   if (temp > NONVALID_TEMPERATURE_MIN && temp < NONVALID_TEMPERATURE_MAX)
-    buf+= "TEMP1=" + String(temp);
+    buf+= "&TEMP1=" + String(temp);
 
-  buf+= "&PRESS=" + String(bmePres);
+  /* check pressure */
+  if (bmePres > NONVALID_PRESSURE_MIN && bmePres < NONVALID_PRESSURE_MAX) 
+    buf+= "&PRESS=" + String(bmePres);
   
-  buf+= "&HUM=";
-  if ((dhtHum) > NONVALID_HUMIDITY) 
-    buf+= String(dhtHum);
-  else if ((dhtHum2) > NONVALID_HUMIDITY) 
-    buf+= String(dhtHum2);
+  /* check humidity */
+  float hum = NONVALID_HUMIDITY_MIN;
+  if ((dhtHum) > NONVALID_HUMIDITY_MIN) 
+    hum = dhtHum;
+  else if ((dhtHum2) > NONVALID_HUMIDITY_MIN) 
+    hum = dhtHum2;
   else 
-    buf+= String(bmeHum);
+    hum = bmeHum;
+  if (hum > NONVALID_HUMIDITY_MIN && hum < NONVALID_HUMIDITY_MAX)
+     buf+= "&HUM=" + String(hum);
   
-  buf+= "&LUX=" + String(bh1750Lux);
-  
+  /* check illumintaion  */
+  if (bh1750Lux > NONVALID_LUX_MIN && bh1750Lux < NONVALID_LUX_MAX) 
+    buf+= "&LUX=" + String(bh1750Lux);
+    
+  /* check Cloud Sensor */
   if ( (mlxObj > NONVALID_TEMPERATURE_MIN && mlxObj < NONVALID_TEMPERATURE_MAX) && (temp > NONVALID_TEMPERATURE_MIN && temp < NONVALID_TEMPERATURE_MAX)  && ((temp - mlxObj) > NONVALID_CIDX_MIN && (temp - mlxObj) < NONVALID_CIDX_MAX) ) 
     buf+= "&CIDX=" + String((temp - mlxObj));
 
-  //Добавим RainSensor
-  buf+= "&RAIN=";
-  buf+= String(rainSensor);
+  /* check RainSensor  */
+  if (rainSensor > NONVALID_RAINSENSOR_MIN && rainSensor < NONVALID_RAINSENSOR_MAX) 
+    buf+= "&RAIN=" + String(rainSensor);
 
   return buf;
 }

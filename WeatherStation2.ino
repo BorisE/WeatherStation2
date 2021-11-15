@@ -1,6 +1,6 @@
 /*
   WEATHER STATION MkII
-  (c) 2020 by Boris Emchenko
+  (c) 2020-2021 by Boris Emchenko
 
   TODO:
   - NTP server
@@ -10,8 +10,16 @@
   - CO2 sensor?
   - OTA web update
   - Deepsleep mode?
+  - i2c scanner from web
 
  Changes:
+   ver 2.9c 2021/11/15 [455800/33052]
+                      - check if BME sensor were initialized before polling data (was on exception list)
+                      - disable ESP8266mDNS service (was on exception list)
+   ver 2.9b 2021/11/15 [455984/33056]
+                      - all data checking of data before sending to Narodmon
+   ver 2.9 2021/11/15 [455860/33060]
+                      - new harware revision
    ver 2.8a 2021/03/14 [455860/33060]
                       - sending rain sensor to Narodmon
                       - additional checking for CIDX before sending to Narodmon
@@ -103,15 +111,15 @@
 */
 
 //Compile version
-#define VERSION "2.8a2"
-#define VERSION_DATE "20210314"
+#define VERSION "2.9c"
+#define VERSION_DATE "20211115"
 
 #include <FS.h>          // this needs to be first, or it all crashes and burns...
 #include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
-#include <ESP8266mDNS.h>
+/*#include <ESP8266mDNS.h>*/
 #include <ESP8266HTTPClient.h>
 #include <ArduinoJson.h> // https://github.com/bblanchon/ArduinoJson
 #include <ArduinoOTA.h>
@@ -136,14 +144,6 @@ ESP8266HTTPUpdateServer httpUpdater;
 
 unsigned long _last_HTTP_SEND=0;
 
-#define NONVALID_TEMPERATURE_MIN -55
-#define NONVALID_TEMPERATURE_MAX 100
-#define NONVALID_CIDX_MIN -5
-#define NONVALID_CIDX_MAX 50
-#define NONVALID_PRESSURE 0
-#define NONVALID_HUMIDITY 0
-#define NONVALID_LUX -100
-
 Ticker ticker;
 const int STATUS_LED = LED_BUILTIN;
 
@@ -160,9 +160,9 @@ DHTesp dht2;
 
 // Create BME280 object
 BME280_I2C bme(MY_BME280_ADDRESS);
-float bmePres = NONVALID_PRESSURE;
+float bmePres = NONVALID_PRESSURE_MIN;
 float bmeTemp = NONVALID_TEMPERATURE_MIN;
-float bmeHum  = NONVALID_HUMIDITY;
+float bmeHum  = NONVALID_HUMIDITY_MIN;
 unsigned long _lastReadTime_BME=0;
 
 OneWire  OneWireBus;  
@@ -179,7 +179,7 @@ unsigned long _lastReadTime_MLX=0;
 
 //BH1750FVI light sensor part
 BH1750 lightMeter (BH1750_ADDR);
-float bh1750Lux = NONVALID_LUX;
+float bh1750Lux = NONVALID_LUX_MIN;
 unsigned long _lastReadTime_BH1750=0;
 
 //Rain sensor
@@ -233,13 +233,14 @@ void setup(void) {
 
   ////////////////////////////////
   // MDNS INIT
+  /*
   if (MDNS.begin(host)) {
     MDNS.addService("http", "tcp", 80);
     Serial.print(F("Open http://"));
     Serial.print(host);
     Serial.println(F(".local to access WeatherStation interface"));
   }
-
+*/
   ////////////////////////////////
   // WebServer INIT
   server.on("/table", handleRoot);
@@ -281,6 +282,7 @@ void setup(void) {
   if (!bme.begin(configData.I2CSDAPin, configData.I2CSCLPin)) 
   {
     Serial.println(F("Could not find a valid BME280 sensor, check wiring!"));
+    _lastReadTime_BME = -1;
   } 
 
   //MLX
@@ -295,6 +297,8 @@ void setup(void) {
 
   //BH1750
   lightMeter.begin(BH1750::ONE_TIME_HIGH_RES_MODE);
+
+  Serial.println(F("*** END OF SETUP ***"));
 }
 
 /********************************************************
@@ -305,7 +309,7 @@ void loop(void) {
   currenttime = millis();
   
   server.handleClient();
-  MDNS.update();
+  /*MDNS.update();*/
   ArduinoOTA.handle();
   
   // Send data to webserver
@@ -345,7 +349,7 @@ void loop(void) {
     _lastReadTime_DHT= currenttime;
   }
   
-  if (_lastReadTime_BME ==0 || (currenttime - _lastReadTime_BME) > BME_READ_INTERVAL)
+  if (_lastReadTime_BME != -1 && (_lastReadTime_BME ==0 || (currenttime - _lastReadTime_BME) > BME_READ_INTERVAL))
   {
     bOutput=true;
     getBMEvalues(bmePres, bmeTemp, bmeHum);

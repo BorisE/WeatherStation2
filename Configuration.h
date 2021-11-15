@@ -11,15 +11,15 @@
 static const uint8_t D0   = 3;
 static const uint8_t D1   = 1;
 static const uint8_t D2   = 16;
-static const uint8_t D3   = 5;                --> SDA
-static const uint8_t D4   = 4;                --> SCL
-static const uint8_t D5   = 14;               --> DHT_2
+static const uint8_t D3   = 5;                --> SCL
+static const uint8_t D4   = 4;                --> SDA
+static const uint8_t D5   = 14;               --> DHT_1
 static const uint8_t D6   = 12;               --> OneWire bus
-static const uint8_t D7   = 13; /=D11             
+static const uint8_t D7   = 13;               --> DHT_2    
 static const uint8_t D8   = 0;  /startup pin.  pulled up to Vcc. Don't use as intput. Special care as output
 static const uint8_t D9   = 2;  /startup pin. LED.  pulled up to Vcc. Don't use as intput. Special care as output         -->Used as LED
 static const uint8_t D10  = 15; /startup pin. pulled down to GND. Don't use as intput. Special care as output
-static const uint8_t D11  = 13; /=D7          --> DHT_1
+static const uint8_t D11  = 13; /=D7          
 static const uint8_t D12  = 12; /=D6
 static const uint8_t D13  = 14; /=D5
 static const uint8_t D14  = 4;  /=D4
@@ -69,12 +69,12 @@ static const uint8_t TX   = 1;
  */
 
 //I2C wire
-#define SDA_PIN_DEFAULT D3
-#define SCL_PIN_DEFAULT D4
+#define SDA_PIN_DEFAULT D4
+#define SCL_PIN_DEFAULT D3
 
 //DHT pin
-#define DHT_PIN_DEFAULT D11
-#define DHT_2_PIN_DEFAULT D5
+#define DHT_PIN_DEFAULT D5
+#define DHT_2_PIN_DEFAULT D7
 
 //BME280
 #define MY_BME280_ADDRESS (0x76)
@@ -98,20 +98,36 @@ uint8_t OW_Temp1Addr[8] = { 0x28, 0x6D, 0xA3, 0x68, 0x4, 0x0, 0x0, 0xF8 };
 #define NARODMON_SERVER_GET   "http://narodmon.ru/get"
 
 
-#define DEFAULT_POST_URL "http://192.168.0.199/weather/adddata.php"
+#define DEFAULT_POST_URL "http://192.168.0.200/weather/adddata.php"
 
 /*************************************************************
 *	CALCULATIONS INTERVAL SETTINGS
 *************************************************************/
-#define POST_DATA_INTERVAL    120000    // 120000 = 2 мин
-#define POST_NARODMONDATA_INTERVAL    320000  //320000 = 5.33 мин
-#define JS_UPDATEDATA_INTERVAL  10000
-#define OW_READ_INTERVAL      5555
-#define BH1750_READ_INTERVAL  6666
-#define MLX_READ_INTERVAL     7777
-#define BME_READ_INTERVAL     9999
-#define DHT_READ_INTERVAL     11111
+#define POST_DATA_INTERVAL          120000    // 120000 = 2 мин
+#define POST_NARODMONDATA_INTERVAL  320000    //320000 = 5.33 мин
+#define JS_UPDATEDATA_INTERVAL       10000
+#define OW_READ_INTERVAL              5555
+#define BH1750_READ_INTERVAL          6666
+#define MLX_READ_INTERVAL             7777
+#define BME_READ_INTERVAL             9999
+#define DHT_READ_INTERVAL            15111
 
+
+/*************************************************************
+  Data validation constants
+*************************************************************/
+#define NONVALID_TEMPERATURE_MIN -55
+#define NONVALID_TEMPERATURE_MAX 100
+#define NONVALID_CIDX_MIN -5
+#define NONVALID_CIDX_MAX 50
+#define NONVALID_PRESSURE_MIN 400
+#define NONVALID_PRESSURE_MAX 900
+#define NONVALID_LUX_MIN -1
+#define NONVALID_LUX_MAX 1000000
+#define NONVALID_HUMIDITY_MIN 0
+#define NONVALID_HUMIDITY_MAX 101
+#define NONVALID_RAINSENSOR_MIN 0
+#define NONVALID_RAINSENSOR_MAX 1025
 
 
 /*************************************************************

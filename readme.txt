@@ -16,7 +16,7 @@ WEATHER STATION MkII
 #include <ESP8266HTTPUpdateServer.h>
 
 
-WiFiManager.h - модифицированная библиотека
+(!)WiFiManager.h - модифицированная библиотека
 	оригинал: https://github.com/tzapu/WiFiManager
 	* @author Creator tzapu
 	* @author tablatronix
@@ -35,7 +35,7 @@ WiFiManager.h - модифицированная библиотека
 	 *                  - go to root (through javascript) after executing Exit (WiFiManager::handleExit()), Reboot (WiFiManager::handleReset()), WiFiManager::handleParamSave(), WiFiManager::handleWifiSave()
 	 *                  - WiFiManagerParameter.init method made public
 
-BME280_I2C.h - модифицированная библиотека
+(!)BME280_I2C.h - модифицированная библиотека
 	Small optimization of  cactus.io library by Boris
 	version 1.02
 
@@ -46,7 +46,7 @@ BME280_I2C.h - модифицированная библиотека
  
 	7/1/18 Bug Fix by Wilhelm  Fixed getTemperature_C and getTemperature_F
 
-MLX90614.h - модифицированная библиотека
+(!)MLX90614.h - модифицированная библиотека
 	This is a library for the MLX90614 Temp Sensor
 	with small optimization from Boris
 
