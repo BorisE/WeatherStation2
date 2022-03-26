@@ -115,7 +115,7 @@
 #define VERSION_DATE "20211115"
 
 #include <FS.h>          // this needs to be first, or it all crashes and burns...
-#include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
+#include <WiFiManager-be.h> // https://github.com/tzapu/WiFiManager
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
